@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.env
+tokens.json
+src/client_secret_*.json
+*.log
