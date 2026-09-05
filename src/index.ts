@@ -174,6 +174,10 @@ app.post("/messages", async (req, res) => {
   }
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.listen(PORT, () => {
   console.log(`Google Workspace MCP Server running on http://localhost:${PORT}`);
 });
