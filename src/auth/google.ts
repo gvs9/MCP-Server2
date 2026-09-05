@@ -22,11 +22,15 @@ if (process.env.GOOGLE_CLIENT_SECRET_BASE64) {
   try {
     const content = Buffer.from(process.env.GOOGLE_CLIENT_SECRET_BASE64, 'base64').toString('utf8');
     const credentials = JSON.parse(content);
-    CLIENT_ID = credentials.installed.client_id;
-    CLIENT_SECRET = credentials.installed.client_secret;
-    REDIRECT_URI = credentials.installed.redirect_uris[0];
-  } catch (e) {
-    console.warn("Failed to parse GOOGLE_CLIENT_SECRET_BASE64");
+    const key = credentials.installed || credentials.web;
+    if (!key) {
+        throw new Error("Invalid client secret JSON: missing 'installed' or 'web' key");
+    }
+    CLIENT_ID = key.client_id;
+    CLIENT_SECRET = key.client_secret;
+    REDIRECT_URI = key.redirect_uris[0];
+  } catch (e: any) {
+    console.error("Failed to parse GOOGLE_CLIENT_SECRET_BASE64:", e.message);
   }
 } else {
   // Fall back to client secret file
@@ -35,12 +39,15 @@ if (process.env.GOOGLE_CLIENT_SECRET_BASE64) {
     if (fs.existsSync(CREDENTIALS_PATH)) {
       const content = fs.readFileSync(CREDENTIALS_PATH, 'utf8');
       const credentials = JSON.parse(content);
-      CLIENT_ID = credentials.installed.client_id;
-      CLIENT_SECRET = credentials.installed.client_secret;
-      REDIRECT_URI = credentials.installed.redirect_uris[0];
+      const key = credentials.installed || credentials.web;
+      if (key) {
+        CLIENT_ID = key.client_id;
+        CLIENT_SECRET = key.client_secret;
+        REDIRECT_URI = key.redirect_uris[0];
+      }
     }
-  } catch (e) {
-    console.warn("Could not read client_secret JSON, falling back to .env");
+  } catch (e: any) {
+    console.error("Could not read client_secret JSON, falling back to .env:", e.message);
   }
 }
 
