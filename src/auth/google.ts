@@ -17,22 +17,7 @@ let REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/oau
 let REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
 let TOKENS: any = null;
 
-// Try loading from base64 environment variables first (for Railway)
-if (process.env.GOOGLE_CLIENT_SECRET_BASE64) {
-  try {
-    const content = Buffer.from(process.env.GOOGLE_CLIENT_SECRET_BASE64, 'base64').toString('utf8');
-    const credentials = JSON.parse(content);
-    const key = credentials.installed || credentials.web;
-    if (!key) {
-        throw new Error("Invalid client secret JSON: missing 'installed' or 'web' key");
-    }
-    CLIENT_ID = key.client_id;
-    CLIENT_SECRET = key.client_secret;
-    REDIRECT_URI = key.redirect_uris[0];
-  } catch (e: any) {
-    console.error("Failed to parse GOOGLE_CLIENT_SECRET_BASE64:", e.message);
-  }
-} else {
+if (!CLIENT_ID || !CLIENT_SECRET) {
   // Fall back to client secret file
   const CREDENTIALS_PATH = path.join(__dirname, '..', 'client_secret_801947048828-osu4ecepnlei8ihid54k4jchtp16uqtp.apps.googleusercontent.com.json');
   try {
@@ -51,17 +36,7 @@ if (process.env.GOOGLE_CLIENT_SECRET_BASE64) {
   }
 }
 
-if (process.env.GOOGLE_TOKENS_BASE64) {
-  try {
-    const content = Buffer.from(process.env.GOOGLE_TOKENS_BASE64, 'base64').toString('utf8');
-    TOKENS = JSON.parse(content);
-    if (TOKENS.refresh_token) {
-      REFRESH_TOKEN = TOKENS.refresh_token;
-    }
-  } catch (e) {
-    console.warn("Failed to parse GOOGLE_TOKENS_BASE64");
-  }
-} else {
+if (!REFRESH_TOKEN) {
   const TOKEN_PATH = path.join(__dirname, '..', '..', 'tokens.json');
   try {
     if (fs.existsSync(TOKEN_PATH)) {
